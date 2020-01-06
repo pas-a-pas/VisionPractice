@@ -15,6 +15,8 @@ using namespace std;
 
 class FileUtils {
 public:
-    static void listFiles(const std::string& path, std::function<void(const std::string&, const std::string&, void*)> cb, void* params);
+    static void listFiles(const std::string& path, std::function<void(const std::string&, void*)> cb, void* params);
+    
+    static bool isDirectory(const std::string& path);
 };
 #endif /* Utils_hpp */

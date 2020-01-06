@@ -17,14 +17,14 @@ using namespace cv;
 
 class HistogramRunner {
 public:
-    void run(std::string imageDirectory);
+    cv::Mat run(const std::string& imageDirectory);
     
 private:
-    static void onEachImage(const std::string& directory, const std::string& imageName, void* params);
+    static void onEachImage(const std::string& imageName, void* params);
     
-    void pick(std::string imageDirectory, std::string patchFile);
+    void pick(const std::string& imageDirectory, const std::string& patchFile);
     
-    void analyze(std::string patchFile);
+    cv::Mat analyze(const std::string& patchFile);
     
     cv::FileStorage fileStorage;
 };

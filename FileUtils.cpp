@@ -13,7 +13,7 @@
 #include <dirent.h>
 
 void
-FileUtils::listFiles(const std::string& path, std::function<void(const std::string&, const std::string&, void*)> cb, void* params) {
+FileUtils::listFiles(const std::string& path, std::function<void(const std::string&, void*)> cb, void* params) {
     if (auto dir = opendir(path.c_str())) {
         while (auto f = readdir(dir)) {
             if (!f->d_name || f->d_name[0] == '.') continue;
@@ -21,8 +21,19 @@ FileUtils::listFiles(const std::string& path, std::function<void(const std::stri
                 listFiles(path + f->d_name + "/", cb, params);
 
             if (f->d_type == DT_REG)
-                cb(path, f->d_name, params);
+                cb(path + f->d_name, params);
         }
         closedir(dir);
     }
+}
+
+bool
+FileUtils::isDirectory(const std::string& path) {
+    bool ret = false;
+    if (auto dir = opendir(path.c_str())) {
+        ret = true;
+        closedir(dir);
+    }
+    
+    return ret;
 }

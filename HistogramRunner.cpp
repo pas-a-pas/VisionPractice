@@ -15,26 +15,28 @@
 
 using namespace cv;
 
-void
-HistogramRunner::run(std::string imageDirectory) {
+cv::Mat
+HistogramRunner::run(const std::string& imageDirectory) {
+    cv::Mat histogram;
+    
     std::string patchFile("patches.yml");
     pick(imageDirectory, patchFile);
-    analyze(patchFile);
+    histogram = analyze(patchFile);
+    
+    return histogram;
 }
     
 void
-HistogramRunner::onEachImage(const std::string& directory, const std::string& imageName, void* params) {
+HistogramRunner::onEachImage(const std::string& imageName, void* params) {
     HistogramRunner* runner = (HistogramRunner*) params;
-        
-    std::string imagePath = directory + imageName;
-        
-    ImagePatchPicker picker(imagePath);
+                
+    ImagePatchPicker picker(imageName);
     std::vector<cv::Rect> patches = picker.pick();
     if (patches.size() == 0) {
         return;
     }
     runner->fileStorage << "{";
-    runner->fileStorage << "imagePath" << imagePath;
+    runner->fileStorage << "imagePath" << imageName;
     runner->fileStorage << "data" << "[";
     for (std::vector<cv::Rect>::iterator it = patches.begin(); it != patches.end(); ++it) {
         cv::Rect patch = *it;
@@ -45,18 +47,23 @@ HistogramRunner::onEachImage(const std::string& directory, const std::string& im
 }
 
 void
-HistogramRunner::pick(std::string imageDirectory, std::string patchFile) {
+HistogramRunner::pick(const std::string& imageDirectory, const std::string& patchFile) {
     fileStorage.open(patchFile, cv::FileStorage::WRITE);
     fileStorage << "patches" << "[";
-    FileUtils::listFiles(imageDirectory, onEachImage, this);
+    
+    if (FileUtils::isDirectory(imageDirectory)) {
+        FileUtils::listFiles(imageDirectory, onEachImage, this);
+    } else {
+        onEachImage(imageDirectory, this);
+    }
     fileStorage << "]";
     fileStorage.release();
 }
     
-void
-HistogramRunner::analyze(std::string patchFile) {
+cv::Mat
+HistogramRunner::analyze(const std::string& patchFile) {
     cv::Mat result;
-    HsvHistogram histogram(32, 32);
+    HsvHistogram histogram(64, 64);
     
     fileStorage.open(patchFile, cv::FileStorage::READ);
     cv::FileNode patches = fileStorage["patches"];
@@ -80,4 +87,6 @@ HistogramRunner::analyze(std::string patchFile) {
 
     cv::normalize(result, result, 0, 255, NORM_MINMAX);
     histogram.chart(result);
+    
+    return result;
 }

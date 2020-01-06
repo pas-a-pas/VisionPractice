@@ -7,10 +7,18 @@
 //
 
 #include "HistogramRunner.hpp"
+#include "SkinDetector.hpp"
+
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
 
 int main(int argc, const char * argv[]) {
     HistogramRunner runner;
-    runner.run("/* test directory*/");
+    cv::Mat histogram = runner.run("/* path to an image or a directory */");
+    
+    SkinDetector detector(histogram);
+    detector.detect("/* path to an image or a directory */");
     
     return 0;
 }
